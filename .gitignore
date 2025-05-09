@@ -37,3 +37,6 @@ env/
 
 # Ignore Windows system files
 Thumbs.db
+
+# Ignore sparse cache directory
+backend/sparse_cache/
