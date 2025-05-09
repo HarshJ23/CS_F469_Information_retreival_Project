@@ -125,16 +125,16 @@ def query_and_print(chain, retriever, question):
     """
     Query the RAG chain, retrieve source documents (post-reranking), and print results.
     """
-    print("\n--- Querying (with Reranking) ---")
+    print("\nQuerying (with Reranking)")
     print(f"Question: {question}")
 
     answer = chain.invoke(question)
     print(f"\nAnswer:\n{answer}")
 
     source_documents = retriever.invoke(question)
-    print(f"\n--- Source Documents Retrieved (Top {RERANKER_TOP_N} after Reranking) ---")
+    print(f"\nSource Documents Retrieved (Top {RERANKER_TOP_N} after Reranking)")
     pprint.pprint(source_documents)
-    print("--- End of Query ---")
+    print("End of Query")
 
 # Main Execution
 def main():
@@ -150,7 +150,7 @@ def main():
 
     #Setup RAG Chain
     rag_chain = setup_rag_chain(retriever, llm)
-    print("--- RAG System with Reranking Ready ---")
+    print("RAG System with Reranking Ready")
 
     #Query Loop
     while True:

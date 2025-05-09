@@ -106,9 +106,9 @@ def query_and_print(chain, retriever, question):
     print(f"\nAnswer:\n{answer}")
 
     source_documents = retriever.invoke(question)
-    print("\nSource Documents Retrieved ---")
+    print("\nSource Documents Retrieved")
     pprint.pprint(source_documents)
-    print("--- End of Query ---")
+    print("End of Query")
 
 def main():
     print("\nInitializing RAG System (this may take a moment for model loading)")
@@ -120,7 +120,7 @@ def main():
     )
 
     rag_chain = setup_rag_chain(retriever, llm)
-    print("--- RAG System Ready ---")
+    print("RAG System Ready")
 
     #Interactive Query Loop
     while True:

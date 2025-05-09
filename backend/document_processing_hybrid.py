@@ -34,17 +34,17 @@ logging.basicConfig(
     ]
 )
 
+load_dotenv()
 
-
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 # Qdrant configuration
 
-QDRANT_URL="https://a6e0ea2d-281d-4c69-915e-77426083066d.eu-west-2-0.aws.cloud.qdrant.io:6333"
+QDRANT_URL=os.getenv("QDRANT_URL")
 
 
-QDRANT_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.gAAcGdNWPkE8q0bpId8Wd6urc3Qd8HYMZxkdBVnZWnw"
+QDRANT_API_KEY=os.getenv("QDRANT_API_KEY")
 
 COLLECTION_NAME = "hybrid_corpus_v1" 
 DENSE_VECTOR_NAME = "dense-vector"
@@ -203,9 +203,8 @@ def load_process_and_split_pdfs_with_checkpointing(folder_path):
         if needs_processing:
             doc = process_single_pdf(file_path)
             if doc:
-                docs_to_process.append(doc) # Add the Langchain Document object
+                docs_to_process.append(doc)
                 processed_file_paths.add(file_key)
-                # Add processed file to new checkpoint data
                 new_checkpoint_data[file_key] = {
                     "mod_time": mod_time,
                     "size": size
@@ -219,7 +218,6 @@ def load_process_and_split_pdfs_with_checkpointing(folder_path):
 
     logging.info(f"Identified {len(docs_to_process)} new or modified PDFs to process.")
 
-    # Handle deletion: Remove files from new_checkpoint_data that are no longer present
     files_in_checkpoint = set(new_checkpoint_data.keys())
     files_on_disk = set(current_files)
     files_to_remove = files_in_checkpoint - files_on_disk
@@ -238,7 +236,6 @@ def load_process_and_split_pdfs_with_checkpointing(folder_path):
         logging.info("No new documents needed processing.")
         return [], set() 
 
-    # Split the processed documents
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
         chunk_overlap=CHUNK_OVERLAP,
@@ -247,13 +244,13 @@ def load_process_and_split_pdfs_with_checkpointing(folder_path):
         add_start_index=False
     )
     try:
-        final_split_docs = text_splitter.split_documents(docs_to_process) # Directly split Langchain Docs
+        final_split_docs = text_splitter.split_documents(docs_to_process)
         logging.info(f"Split {len(docs_to_process)} documents into {len(final_split_docs)} chunks.")
     except Exception as e:
         logging.error(f"Error splitting documents: {e}")
-        return [], set() # Return empty on splitting error
+        return [], set()
 
-    return final_split_docs, processed_file_paths # Return list of chunks and set of processed parent file paths
+    return final_split_docs, processed_file_paths
 
 def initialize_qdrant_client():
     """Initialize and return the Qdrant client."""
@@ -340,7 +337,7 @@ def index_documents(client: QdrantClient, docs, processed_file_paths):
     texts = [doc.page_content for doc in docs]
     metadatas = [doc.metadata for doc in docs] 
 
-    # --- Generate Dense Embeddings ---
+    # Generate Dense Embeddings
     logging.info("Generating dense embeddings...")
     try:
         dense_vectors = dense_embeddings.embed_documents(texts)
@@ -349,7 +346,7 @@ def index_documents(client: QdrantClient, docs, processed_file_paths):
         logging.error(f"Error generating dense embeddings: {e}")
         raise 
 
-    # --- Generate Sparse Embeddings ---
+    # Generate Sparse Embeddings
     sparse_batch_size = 64 
     sparse_results = []
     num_texts = len(texts)
@@ -430,7 +427,7 @@ def index_documents(client: QdrantClient, docs, processed_file_paths):
 
 # ain Execution
 def main():
-    logging.info("--- Starting Hybrid Document Processing Pipeline ---")
+    logging.info("Starting Hybrid Document Processing Pipeline")
     try:
         
         final_split_docs, processed_file_paths = load_process_and_split_pdfs_with_checkpointing(DOCUMENT_FOLDER_PATH)
@@ -448,10 +445,10 @@ def main():
         
         index_documents(qdrant_client, final_split_docs, processed_file_paths)
 
-        logging.info("--- Hybrid Document Processing Pipeline Finished Successfully ---")
+        logging.info("Hybrid Document Processing Pipeline Finished Successfully")
 
     except Exception as e:
-        logging.exception("--- Hybrid Document Processing Pipeline Failed ---")
+        logging.exception("Hybrid Document Processing Pipeline Failed")
 
 
 if __name__ == "__main__":

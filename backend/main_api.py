@@ -1,4 +1,3 @@
-# script_files/part3/main_api.py
 
 import os
 import warnings
